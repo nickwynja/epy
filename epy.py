@@ -361,6 +361,7 @@ class CfgDefaultKeymaps:
     # HalfScreenDown: str
     NextChapter: str = "L"
     PrevChapter: str = "H"
+    NextPara: str = "p"
     BeginningOfCh: str = "g"
     EndOfCh: str = "G"
     Shrink: str = "-"
@@ -393,6 +394,7 @@ class CfgBuiltinKeymaps:
     PageDown: Tuple[int, ...] = (curses.KEY_NPAGE, ord(" "), curses.KEY_RIGHT)
     BeginningOfCh: Tuple[int, ...] = (curses.KEY_HOME,)
     EndOfCh: Tuple[int, ...] = (curses.KEY_END,)
+    NextPara: Tuple[int, ...] = (ord("\n"),)
     TableOfContents: Tuple[int, ...] = (9, ord("\t"))
     Follow: Tuple[int, ...] = (10,)
     Quit: Tuple[int, ...] = (3, 27, 304)
@@ -430,6 +432,7 @@ class Keymap:
     SwitchColor: Tuple[Key, ...]
     TTSToggle: Tuple[Key, ...]
     TableOfContents: Tuple[Key, ...]
+    NextPara: Tuple[Key, ...]
 
 
 # }}}
@@ -3309,6 +3312,20 @@ class Reader:
                     #     k = list(K["ScrollUp" if k in K["HalfScreenUp"] else "ScrollDown"])[0]
                     #     continue
 
+                    elif k in self.keymap.NextPara:
+                        lines_left = text_structure.text_lines[reading_state.row:]
+
+                        for idx,l in enumerate(lines_left):
+                            try:
+                                if idx > 0 and l == "" and lines_left[idx+1] != "":
+                                    scroll_to = idx
+                                    break
+                            except IndexError as e:
+                                    scroll_to = 0
+
+                        reading_state = dataclasses.replace(
+                                reading_state, row=reading_state.row + scroll_to
+                                )
                     elif k in self.keymap.NextChapter:
                         ntoc = find_current_content_index(
                             toc_entries,
