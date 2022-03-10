@@ -1254,8 +1254,14 @@ class HTMLtoLines(HTMLParser):
             if n in self.sectsindex.keys():
                 sect[self.sectsindex[n]] = starting_line + len(text)
             if n in self.idhead:
-                # text += [line.rjust(textwidth // 2 + len(line) // 2)] + [""]
-                text += [line.center(textwidth)] + [""]
+                if len(line) < textwidth:
+                    text += [""] + [line.rjust(textwidth//2 + len(line)//2)] + [""]
+                else:
+                    h = []
+                    lines = textwrap.wrap(line, textwidth - 8)
+                    for l in lines:
+                        h.append(l.rjust(textwidth//2 + len(l)//2))
+                    text += [""] + h + [""]
                 formatting += [
                     InlineStyle(
                         row=starting_line + i, col=0, n_letters=len(text[i]), attr=self.attr_bold
