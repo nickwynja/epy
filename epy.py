@@ -1112,6 +1112,12 @@ class HTMLtoLines(HTMLParser):
     def handle_starttag(self, tag, attrs):
         if re.match("h[1-6]", tag) is not None:
             self.ishead = True
+        elif tag in self.para:
+            for i in attrs:
+                if i[0] == "class" and i[1] == "ext":
+                    self.isinde = True
+                if i[0] == "class" and i[1] == "spb":
+                    self.isinde = False
         elif tag in self.inde:
             self.isinde = True
         elif tag in self.pref:
@@ -1124,6 +1130,10 @@ class HTMLtoLines(HTMLParser):
             self.text[-1] += "^{"
         elif tag == "sub":
             self.text[-1] += "_{"
+        elif tag == "a":
+            for i in attrs:
+                if i[0] == "class" and i[1] == "noteref":
+                    self.text[-1] += "^"
         # NOTE: "img" and "image"
         # In HTML, both are startendtag (no need endtag)
         # but in XHTML both need endtag
@@ -1219,9 +1229,9 @@ class HTMLtoLines(HTMLParser):
             self.text[-1] += line
             if self.ishead:
                 self.idhead.add(len(self.text) - 1)
-            elif self.isbull:
+            elif self.isbull and line:
                 self.idbull.add(len(self.text) - 1)
-            elif self.isinde:
+            elif self.isinde and line:
                 self.idinde.add(len(self.text) - 1)
             elif self.ispref:
                 self.idpref.add(len(self.text) - 1)
