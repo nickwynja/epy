@@ -957,7 +957,7 @@ class URL(Ebook):
 
 class HTMLtoLines(HTMLParser):
     para = {"p", "div"}
-    inde = {"q", "dt", "dd", "blockquote"}
+    inde = {"q", "dt", "dd", "blockquote", "blockquote1"}
     pref = {"pre"}
     bull = {"li"}
     hide = {"script", "style", "head"}
@@ -1259,18 +1259,20 @@ class HTMLtoLines(HTMLParser):
             if n in self.idhead:
                 if len(line) < textwidth:
                     text += [""] + [line.rjust(textwidth//2 + len(line)//2)] + [""]
+                    formatting += [
+                        InlineStyle(
+                            row=starting_line + i, col=0, n_letters=len(text[i]), attr=self.attr_bold
+                        )
+                        for i in range(startline, len(text))
+                    ]
                 else:
                     h = []
                     lines = textwrap.wrap(line, textwidth - 8)
                     for l in lines:
-                        h.append(l.rjust(textwidth//2 + len(l)//2))
+                        t = l.rjust(textwidth//2 + len(l)//2)
+                        # @TODO: Fix bold for headings split across lines
+                        h.append(t.upper())
                     text += [""] + h + [""]
-                formatting += [
-                    InlineStyle(
-                        row=starting_line + i, col=0, n_letters=len(text[i]), attr=self.attr_bold
-                    )
-                    for i in range(startline, len(text))
-                ]
             elif n in self.idinde:
                 text += ["   " + i for i in textwrap.wrap(line, textwidth - 3)] + [""]
             elif n in self.idbull:
